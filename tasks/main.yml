@@ -5,6 +5,7 @@
     boundary_iface: "{{ ansible_default_ipv4.interface }}"
 
 - name: set boundary_address
+  when: boundary_address is undefined
   set_fact:
     boundary_address: "{{ hostvars[inventory_hostname]['ansible_'+boundary_iface]['ipv4']['address'] }}"
 
@@ -40,7 +41,9 @@
   include_tasks: tls_api.yml
 
 - name: install Vault Transit TLS certificates
-  when: boundary_kms_type == 'transit'
+  when:
+    - boundary_kms_type == 'transit'
+    - (true if boundary_vault_use_tls else false)
   include_tasks: tls_vault_transit.yml
 
 - name: configure boundary
